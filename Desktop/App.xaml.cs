@@ -13,5 +13,17 @@ namespace Desktop
     /// </summary>
     public partial class App : Application
     {
+        
+   
+            protected override void OnStartup(StartupEventArgs e)
+            {
+                base.OnStartup(e);
+
+                // Создаём и показываем главное окно
+                MainWindow mainWindow = new MainWindow();
+                mainWindow.Show();
+            }
+        
     }
 }
+
