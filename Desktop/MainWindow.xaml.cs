@@ -98,10 +98,25 @@ namespace Desktop
                 MessageBox.Show($"Добро пожаловать, {user.Username}!", "Успешный вход",
                     MessageBoxButton.OK, MessageBoxImage.Information);
 
-                // Открываем главное окно
-                Main mainWindow = new Main();
-                mainWindow.SetUserName(user.Username); // Устанавливаем имя пользователя
-                mainWindow.Show();
+                // Проверяем, есть ли у пользователя задачи
+                bool hasTasks = CheckIfUserHasTasks(user.Id);
+
+                if (!hasTasks)
+                {
+                    // Если задач нет - открываем MainEmpty
+                    Main_empty mainEmpty = new Main_empty();
+                    mainEmpty.SetUserInfo(user.Username, user.Id);
+                    mainEmpty.Show();
+                }
+                else
+                {
+                    // Если задачи есть - открываем Main
+                    Main mainWindow = new Main();
+                    mainWindow.SetUserName(user.Username);
+                    mainWindow.LoadUserTasks(user.Id);
+                    mainWindow.Show();
+                }
+
                 this.Hide();
             }
             catch (Exception ex)
@@ -109,6 +124,13 @@ namespace Desktop
                 MessageBox.Show(ex.Message, "Ошибка входа",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private bool CheckIfUserHasTasks(int userId)
+        {
+            // Здесь должна быть логика проверки наличия задач у пользователя
+            // Пока вернем false для всех новых пользователей
+            return false;
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e)

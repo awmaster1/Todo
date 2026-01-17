@@ -8,16 +8,18 @@ namespace Desktop.Repository
     public class UserRepository
     {
         private static List<UserModel> _users = new List<UserModel>();
-        private static int _nextId = 1;
+        private static List<UserTask> _tasks = new List<UserTask>();
+        private static int _nextUserId = 1;
+        private static int _nextTaskId = 1;
 
         static UserRepository()
         {
             // Добавляем тестового пользователя для демонстрации
             _users.Add(new UserModel
             {
-                Id = _nextId++,
+                Id = _nextUserId++,
                 Username = "TestUser",
-                Email = "test@example.com",
+                Email = "pangcheo1210@gmail.com",
                 Password = "123456",
                 RegistrationDate = DateTime.Now,
                 IsActive = true
@@ -41,7 +43,7 @@ namespace Desktop.Repository
                 }
 
                 // Присваиваем ID и сохраняем
-                newUser.Id = _nextId++;
+                newUser.Id = _nextUserId++;
                 newUser.RegistrationDate = DateTime.Now;
                 newUser.IsActive = true;
 
@@ -85,6 +87,107 @@ namespace Desktop.Repository
         public bool UserExists(string email)
         {
             return _users.Any(u => u.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // ===== МЕТОДЫ ДЛЯ РАБОТЫ С ЗАДАЧАМИ =====
+
+        // Получить все задачи пользователя
+        public List<UserTask> GetUserTasks(int userId)
+        {
+            return _tasks.Where(t => t.UserId == userId).ToList();
+        }
+
+        // Проверить, есть ли у пользователя задачи
+        public bool UserHasTasks(int userId)
+        {
+            return _tasks.Any(t => t.UserId == userId);
+        }
+
+        // Создать новую задачу
+        public UserTask CreateTask(UserTask task)
+        {
+            try
+            {
+                task.Id = _nextTaskId++;
+                task.CreatedAt = DateTime.Now;
+                _tasks.Add(task);
+                return task;
+            }
+            catch (Exception)
+            {
+                throw new Exception("Ошибка при создании задачи");
+            }
+        }
+
+        // Обновить задачу
+        public bool UpdateTask(UserTask task)
+        {
+            try
+            {
+                var existingTask = _tasks.FirstOrDefault(t => t.Id == task.Id && t.UserId == task.UserId);
+                if (existingTask != null)
+                {
+                    existingTask.Title = task.Title;
+                    existingTask.Description = task.Description;
+                    existingTask.Date = task.Date;
+                    existingTask.Time = task.Time;
+                    existingTask.Category = task.Category;
+                    existingTask.IsCompleted = task.IsCompleted;
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception)
+            {
+                throw new Exception("Ошибка при обновлении задачи");
+            }
+        }
+
+        // Удалить задачу
+        public bool DeleteTask(int taskId, int userId)
+        {
+            try
+            {
+                var task = _tasks.FirstOrDefault(t => t.Id == taskId && t.UserId == userId);
+                if (task != null)
+                {
+                    _tasks.Remove(task);
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception)
+            {
+                throw new Exception("Ошибка при удалении задачи");
+            }
+        }
+
+        // Получить выполненные задачи пользователя
+        public List<UserTask> GetCompletedTasks(int userId)
+        {
+            return _tasks.Where(t => t.UserId == userId && t.IsCompleted).ToList();
+        }
+
+        // Получить невыполненные задачи пользователя
+        public List<UserTask> GetPendingTasks(int userId)
+        {
+            return _tasks.Where(t => t.UserId == userId && !t.IsCompleted).ToList();
+        }
+
+        // Получить задачи по категории
+        public List<UserTask> GetTasksByCategory(int userId, string category)
+        {
+            if (category == "Все")
+            {
+                return GetUserTasks(userId);
+            }
+            return _tasks.Where(t => t.UserId == userId && t.Category == category).ToList();
+        }
+
+        // Получить задачу по ID
+        public UserTask GetTaskById(int taskId, int userId)
+        {
+            return _tasks.FirstOrDefault(t => t.Id == taskId && t.UserId == userId);
         }
     }
 }
