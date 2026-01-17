@@ -1,0 +1,72 @@
+﻿ СЛОВАРЬ ДАННЫХ
+
+┌─────────────────┐      ┌─────────────────┐
+│     Users       │      │    UserTasks    │
+├─────────────────┤      ├─────────────────┤
+│ PK • Id         │1───┐∞│ PK • Id         │
+│    • Username   │    └─│ FK • UserId     │
+│    • Email      │      │    • Title      │
+│    • Password   │      │    • Description│
+│    • RegDate    │      │    • Date       │
+│    • IsActive   │      │    • Time       │
+└─────────────────┘      │    • Category   │
+                         │    • IsCompleted│
+                         │    • CreatedAt  │
+                         └─────────────────┘
+Таблица 1: Users (Пользователи)
+Поле	            Тип данных	Обязательно	Описание	                                            Пример
+Id	                int (PK)	    Да	    Уникальный идентификатор пользователя	                1
+Username	        nvarchar(100)	Да	    Имя пользователя	                                    "Alex"
+Email	            nvarchar(255)	Да	    Электронная почта	                                    "pangcheo1210@gmail.com"
+Password	        nvarchar(100)	Да	    Пароль (в реальном проекте должен быть хеширован)	    "123456"
+RegistrationDate	datetime	    Да	    Дата регистрации	                                    2024-01-17 14:30:00
+IsActive	        bit	            Да	    Флаг активности пользователя	                        1
+
+
+Таблица 2: UserTasks (Задачи пользователей)
+Поле	        Тип данных	    Обязательно	       Описание	                                Пример
+Id	            int (PK)	    Да	               Уникальный идентификатор задачи	        1
+UserId	        int (FK)	    Да	               Ссылка на пользователя	                1
+Title	        nvarchar(255)	Да	               Название задачи	                        "Сделать домашнее задание"
+Description	    nvarchar(MAX)	Нет	               Подробное описание задачи	            "Сделать упражнения 1-10 по математике"
+Date	        datetime	    Да	               Дата создания задачи	                    2024-01-17
+Time	        nvarchar(50)	Нет	               Время выполнения задачи	                "9:00 am"
+Category	    nvarchar(50)	Да	               Категория задачи	                        "Учеба"
+IsCompleted	    bit	            Да	               Статус выполнения                        (0/1)	0
+CreatedAt	    datetime	    Да	               Дата и время создания записи	            2024-01-17 14:35:00
+
+
+Окна приложения:
+Окно	        Название класса	        Назначение	                Основные элементы
+MainWindow	    Desktop.MainWindow	    Окно входа/регистрации	    2 TextBox, 2 Button, Image
+Registration	Desktop.Registration	Окно регистрации	        4 TextBox, 2 Button, Image
+Main_empty	    Desktop.Main_empty	    Окно без задач	            2 Label, 1 Button, Image
+CreateTask	    Desktop.CreateTask	    Создание задачи	            TextBox, ComboBox, 2 Button, TextBlock
+Main	        Lab4.Main	            Основное окно приложения	StackPanel, ListBox, 2 Button, TextBlock
+
+
+Методы работы с задачами:
+Метод	            Параметры	    Возвращаемое значение	    Описание
+GetUserTasks	    userId	        List<UserTask>	            Все задачи пользователя
+UserHasTasks	    userId	        bool	                    Проверка наличия задач
+CreateTask	        UserTask	    UserTask	                Создание новой задачи
+UpdateTask	        UserTask	    bool	                    Обновление задачи
+DeleteTask	        taskId,         userId	bool	            Удаление задачи
+GetTasksByCategory	userId,         categoryList<UserTask>	    Фильтрация по категории
+
+
+Структура решения:
+Solution TodoApp
+├── Desktop (WPF приложение)
+│   ├── MainWindow.xaml        // Окно входа
+│   ├── Registration.xaml      // Окно регистрации
+│   ├── Main_empty.xaml        // Окно без задач
+│   ├── CreateTask.xaml        // Окно создания задачи
+│   ├── Repository
+│   │   └── UserRepository.cs  // Логика работы с данными
+│   └── App.xaml               // Конфигурация приложения
+├── Lab4 (основное приложение)
+│   └── Main.xaml              // Основное окно ToDo
+└── Todo.Entities (библиотека классов)
+    ├── UserModel.cs           // Модель пользователя
+    └── UserTask.cs            // Модель задачи
