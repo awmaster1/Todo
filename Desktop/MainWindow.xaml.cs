@@ -1,6 +1,9 @@
 ﻿using Desktop.Repository;
 using Desktop.View;
+using System;
 using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Navigation;
 using Todo.Entities;
 
@@ -108,5 +111,32 @@ namespace Desktop
                 MainFrame.GoBack();
             }
         }
+        private void MainFrame_Navigated(object sender, NavigationEventArgs e)
+        {
+            // Fade in
+            var fadeAnimation = new DoubleAnimation
+            {
+                From = 0,
+                To = 1,
+                Duration = TimeSpan.FromMilliseconds(300)
+            };
+
+            // Slide from right
+            var slideAnimation = new DoubleAnimation
+            {
+                From = 30,
+                To = 0,
+                Duration = TimeSpan.FromMilliseconds(300),
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+            };
+
+            MainFrame.BeginAnimation(OpacityProperty, fadeAnimation);
+
+            if (MainFrame.RenderTransform is TranslateTransform transform)
+            {
+                transform.BeginAnimation(TranslateTransform.XProperty, slideAnimation);
+            }
+        }
+
     }
 }
