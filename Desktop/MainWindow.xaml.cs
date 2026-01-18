@@ -1,163 +1,112 @@
-﻿using System;
-using System.Text;
+﻿using Desktop.Repository;
+using Desktop.View;
 using System.Windows;
-using System.Windows.Controls;
+using System.Windows.Navigation;
 using Todo.Entities;
-using Desktop.Repository;
-using Lab4;
 
 namespace Desktop
 {
     public partial class MainWindow : Window
     {
         private UserRepository _userRepository;
+        private int _currentUserId;
+        private string _currentUserName;
 
         public MainWindow()
         {
             InitializeComponent();
             _userRepository = new UserRepository();
 
-            // Обработчики для placeholder
-            Mail.GotFocus += RemovePlaceholder;
-            Mail.LostFocus += AddPlaceholder;
-            Pass.GotFocus += RemovePlaceholder;
-            Pass.LostFocus += AddPlaceholder;
-
-            // Обработчик закрытия главного окна
-            this.Closing += MainWindow_Closing;
-
-            // Устанавливаем плейсхолдеры при запуске
-            AddPlaceholder(null, null);
+            // Загружаем LoginPage при запуске
+            LoadLoginPage();
         }
 
-        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void LoadLoginPage()
         {
-            // Проверяем, открыты ли другие окна
-            if (Application.Current.Windows.Count <= 1)
-            {
-                Application.Current.Shutdown();
-            }
+            var loginPage = new LoginPage();
+            loginPage.LoginSuccess += OnLoginSuccess;
+            loginPage.RegistrationRequested += OnRegistrationRequested;
+
+            MainFrame.Navigate(loginPage);
         }
 
-        private void RemovePlaceholder(object sender, RoutedEventArgs e)
+        private void OnLoginSuccess(object sender, (UserModel user, bool hasTasks) result)
         {
-            TextBox textBox = sender as TextBox;
-            if (textBox != null && textBox.Foreground.ToString() == "#FFC5BEBE")
-            {
-                textBox.Text = "";
-                textBox.Foreground = System.Windows.Media.Brushes.Black;
-            }
-        }
+            // Сохраняем данные пользователя
+            _currentUserId = result.user.Id;
+            _currentUserName = result.user.Username;
 
-        private void AddPlaceholder(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(Mail.Text))
+            // Логика после входа
+            if (!result.hasTasks)
             {
-                Mail.Text = "pangcheo1210@gmail.com";
-                Mail.Foreground = System.Windows.Media.Brushes.Gray;
+                var mainEmptyPage = new MainEmptyPage();
+                mainEmptyPage.SetUserInfo(_currentUserName, _currentUserId);
+                mainEmptyPage.CreateTaskRequested += OnCreateTaskRequested;
+                MainFrame.Navigate(mainEmptyPage);
             }
-
-            if (string.IsNullOrWhiteSpace(Pass.Text))
+            else
             {
-                Pass.Text = "Введите пароль";
-                Pass.Foreground = System.Windows.Media.Brushes.Gray;
+                var mainPage = new MainPage();
+                mainPage.SetUserName(_currentUserName);
+                mainPage.LoadUserTasks(_currentUserId);
+                mainPage.CreateTaskRequested += OnCreateTaskRequested;
+                MainFrame.Navigate(mainPage);
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void OnRegistrationRequested(object sender, System.EventArgs e)
         {
-            // Вход
-            StringBuilder errors = new StringBuilder();
+            var registrationPage = new RegistrationPage();
+            registrationPage.RegistrationCompleted += OnRegistrationCompleted;
+            MainFrame.Navigate(registrationPage);
+        }
 
-            string email = Mail.Foreground.ToString() == "#FFC5BEBE" ? "" : Mail.Text.Trim();
-            string password = Pass.Foreground.ToString() == "#FFC5BEBE" ? "" : Pass.Text;
-
-            // Валидация
-            if (string.IsNullOrEmpty(email))
-                errors.AppendLine("• Поле 'Почта' не может быть пустым");
-            else if (!email.Contains("@") || !email.Contains(".") || email.Length < 5)
-                errors.AppendLine("• Введите корректный email адрес");
-
-            if (string.IsNullOrEmpty(password))
-                errors.AppendLine("• Поле 'Пароль' не может быть пустым");
-            else if (password.Length < 6)
-                errors.AppendLine("• Пароль должен содержать минимум 6 символов");
-
-            if (errors.Length > 0)
+        private void OnRegistrationCompleted(object sender, bool success)
+        {
+            if (success)
             {
-                MessageBox.Show($"Обнаружены ошибки:\n\n{errors}", "Ошибка ввода",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                MessageBox.Show("Регистрация успешна! Теперь войдите в систему.",
+                    "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                // Возвращаемся на страницу входа
+                LoadLoginPage();
             }
-
-            try
+            else
             {
-                // Авторизация через репозиторий
-                UserModel user = _userRepository.Login(email, password);
-
-                MessageBox.Show($"Добро пожаловать, {user.Username}!", "Успешный вход",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-
-                // Проверяем, есть ли у пользователя задачи
-                bool hasTasks = CheckIfUserHasTasks(user.Id);
-
-                if (!hasTasks)
+                // Отмена регистрации - возвращаемся назад
+                if (MainFrame.CanGoBack)
                 {
-                    // Если задач нет - открываем MainEmpty
-                    Main_empty mainEmpty = new Main_empty();
-                    mainEmpty.SetUserInfo(user.Username, user.Id);
-                    mainEmpty.Show();
-                }
-                else
-                {
-                    // Если задачи есть - открываем Main
-                    Main mainWindow = new Main();
-                    mainWindow.SetUserName(user.Username);
-                    mainWindow.LoadUserTasks(user.Id);
-                    mainWindow.Show();
-                }
-
-                this.Hide();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Ошибка входа",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private bool CheckIfUserHasTasks(int userId)
-        {
-            // Здесь должна быть логика проверки наличия задач у пользователя
-            // Пока вернем false для всех новых пользователей
-            return false;
-        }
-
-        private void Button_Click_1(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                Registration registration = new Registration();
-                registration.Owner = this;
-
-                bool? result = registration.ShowDialog();
-
-                if (result == true)
-                {
-                    MessageBox.Show("Теперь вы можете войти в систему", "Регистрация успешна",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    MainFrame.GoBack();
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
         }
 
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e) { }
-        private void TextBox_TextChanged_1(object sender, TextChangedEventArgs e) { }
+        private void OnCreateTaskRequested(object sender, System.EventArgs e)
+        {
+            var createTaskPage = new CreateTaskPage(_currentUserId, _currentUserName);
+            createTaskPage.TaskCreated += OnTaskCreated;
+            createTaskPage.CancelRequested += OnTaskCreationCanceled;
+            MainFrame.Navigate(createTaskPage);
+        }
 
-      
+        // ИСПРАВЛЕННЫЙ МЕТОД
+        private void OnTaskCreated(object sender, System.EventArgs e)
+        {
+            // После создания задачи создаем новую главную страницу
+            var mainPage = new MainPage();
+            mainPage.SetUserName(_currentUserName);
+            mainPage.LoadUserTasks(_currentUserId);
+            mainPage.CreateTaskRequested += OnCreateTaskRequested;
+            MainFrame.Navigate(mainPage);
+        }
+
+        private void OnTaskCreationCanceled(object sender, System.EventArgs e)
+        {
+            // Отмена создания задачи - возвращаемся назад
+            if (MainFrame.CanGoBack)
+            {
+                MainFrame.GoBack();
+            }
+        }
     }
 }

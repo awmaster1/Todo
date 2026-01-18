@@ -24,6 +24,23 @@ namespace Desktop.Repository
                 RegistrationDate = DateTime.Now,
                 IsActive = true
             });
+
+            // ЗАКОММЕНТИРОВАНО: тестовая задача удалена
+            // чтобы новые пользователи попадали на MainEmptyPage
+            /*
+            _tasks.Add(new UserTask
+            {
+                Id = _nextTaskId++,
+                UserId = 1,
+                Title = "Пример задачи",
+                Description = "Это пример задачи",
+                Date = DateTime.Now,
+                Time = "10:00",
+                Category = "Работа",
+                IsCompleted = false,
+                CreatedAt = DateTime.Now
+            });
+            */
         }
 
         public bool RegisterUser(UserModel newUser)
@@ -188,6 +205,18 @@ namespace Desktop.Repository
         public UserTask GetTaskById(int taskId, int userId)
         {
             return _tasks.FirstOrDefault(t => t.Id == taskId && t.UserId == userId);
+        }
+
+        // Новый метод: получить пользователя по ID
+        public UserModel GetUserById(int userId)
+        {
+            return _users.FirstOrDefault(u => u.Id == userId);
+        }
+
+        // Новый метод: получить всех пользователей (для отладки)
+        public List<UserModel> GetAllUsers()
+        {
+            return _users.ToList();
         }
     }
 }

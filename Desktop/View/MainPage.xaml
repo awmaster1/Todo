@@ -1,0 +1,261 @@
+﻿<Page x:Class="Desktop.View.MainPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="ToDo App" 
+      Height="600" 
+      Width="800"
+      Background="#F5F6FA">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="300"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ===== LEFT PANEL ===== -->
+        <Grid Grid.Column="0" Background="White">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                <StackPanel Height="501">
+                    <!-- Profile -->
+                    <Border BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Margin="0,0,0,10">
+                        <StackPanel Margin="20" HorizontalAlignment="Center">
+                            <Ellipse Width="80" Height="80">
+                                <Ellipse.Fill>
+                                    <ImageBrush ImageSource="/123456.PNG"/>
+                                </Ellipse.Fill>
+                            </Ellipse>
+                            <TextBlock x:Name="UserNameText" 
+                                       Text="TestUser"
+                                       Margin="0,10,0,0"
+                                       FontSize="16"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Menu -->
+                    <StackPanel Margin="20,10,20,20">
+                        <TextBlock Text="Задачи" 
+                                   FontSize="14" 
+                                   Padding="10,8"
+                                   MouseLeftButtonDown="TasksText_MouseLeftButtonDown" 
+                                   Cursor="Hand"/>
+                        <TextBlock Text="История" 
+                                   FontSize="14" 
+                                   Padding="10,8"
+                                   MouseLeftButtonDown="HistoryText_MouseLeftButtonDown" 
+                                   Cursor="Hand"/>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Add button at the bottom center -->
+            <Border 
+                    BorderBrush="#E0E0E0" 
+                    BorderThickness="0,1,0,0" 
+                    Padding="0,10,0,10" Margin="0,498,0,41" Grid.RowSpan="2">
+                <Button Content="+"
+                        Height="40"
+                        FontSize="24"
+                        Background="#FF6B6B"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Click="AddButton_Click" Margin="80,0,80,0"/>
+            </Border>
+        </Grid>
+
+        <!-- ===== CENTER PANEL ===== -->
+        <Grid Grid.Column="1" Margin="0,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Categories -->
+            <Border Grid.Row="0" 
+                    BorderBrush="#E0E0E0" 
+                    BorderThickness="0,0,0,1" 
+                    Background="White"
+                    Padding="0,0,0,10">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" 
+                              VerticalScrollBarVisibility="Disabled">
+                    <StackPanel Orientation="Horizontal" Margin="10,10,10,0">
+                        <TextBlock Text="Все"
+                                   Foreground="Black" 
+                                   Padding="10,5"
+                                   FontSize="14"
+                                   Cursor="Hand"
+                                   MouseLeftButtonDown="Category_Click"
+                                   Tag="Все"/>
+                        <TextBlock Text="Дом" 
+                                   Foreground="Green" 
+                                   Padding="10,5"
+                                   FontSize="14"
+                                   Cursor="Hand"
+                                   MouseLeftButtonDown="Category_Click"
+                                   Tag="Дом"/>
+                        <TextBlock Text="Работа" 
+                                   Foreground="Orange" 
+                                   Padding="10,5"
+                                   FontSize="14"
+                                   Cursor="Hand"
+                                   MouseLeftButtonDown="Category_Click"
+                                   Tag="Работа"/>
+                        <TextBlock Text="Учеба" 
+                                   Foreground="Blue" 
+                                   Padding="10,5"
+                                   FontSize="14"
+                                   Cursor="Hand"
+                                   MouseLeftButtonDown="Category_Click"
+                                   Tag="Учеба"/>
+                        <TextBlock Text="Отдых" 
+                                   Foreground="Purple" 
+                                   Padding="10,5"
+                                   FontSize="14"
+                                   Cursor="Hand"
+                                   MouseLeftButtonDown="Category_Click"
+                                   Tag="Отдых"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Task list -->
+            <ScrollViewer Grid.Row="1" 
+                          VerticalScrollBarVisibility="Auto" 
+                          Margin="10">
+                <StackPanel x:Name="TasksList">
+                    <!-- Tasks will be added dynamically -->
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- ===== RIGHT PANEL ===== -->
+        <Grid Grid.Column="2" Background="White">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="20">
+                    <TextBlock x:Name="TaskTitle"
+                               Text="Заголовок"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,15"/>
+
+                    <Border BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="0,0,0,15">
+                        <StackPanel>
+                            <TextBlock x:Name="TaskTime"
+                                       Text="18:00"
+                                       FontSize="14"/>
+                            <TextBlock x:Name="TaskDate"
+                                       Text="01 Января 2022"
+                                       Foreground="Gray"
+                                       FontSize="12"/>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock x:Name="TaskDescription"
+                               Text="Lorem ipsum dolor sit amet, consectetur adipiscing."
+                               Margin="0,15,0,0"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Action buttons at the bottom right -->
+            <Border 
+                    BorderBrush="#E0E0E0" 
+                    BorderThickness="0,1,0,0" 
+                    Padding="20" RenderTransformOrigin="0.5,0.5" Margin="0,448,0,21" Grid.RowSpan="2">
+                <Border.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="0.374"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Border.RenderTransform>
+                <StackPanel>
+                    <Button x:Name="CompleteButton"
+                            Content="Готово"
+                            Margin="0,0,0,10"
+                            Height="40"
+                            Background="#FF6B6B"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Click="CompleteButton_Click"
+                            IsEnabled="False">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border" 
+                                                    CornerRadius="15,15,3,3"
+                                                    Background="{TemplateBinding Background}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#FFD85050"/>
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#FFC43C3C"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button x:Name="DeleteButton"
+                            Content="Удалить"
+                            Height="40"
+                            Background="#FF6B6B"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Click="DeleteButton_Click"
+                            IsEnabled="False">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border" 
+                                                    CornerRadius="3,3,15,15"
+                                                    Background="{TemplateBinding Background}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#FFD85050"/>
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#FFC43C3C"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

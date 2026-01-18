@@ -5,20 +5,23 @@ using System.Windows.Controls;
 using Todo.Entities;
 using Desktop.Repository;
 
-namespace Desktop
+namespace Desktop.View
 {
-    public partial class Registration : Window
+    public partial class RegistrationPage : Page
     {
         private UserRepository _userRepository;
 
-        public Registration()
+        // Событие для уведомления о регистрации
+        public event EventHandler<bool> RegistrationCompleted;
+
+        public RegistrationPage()
         {
             InitializeComponent();
             _userRepository = new UserRepository();
 
             // Обработчики для placeholder
-            Name.GotFocus += RemovePlaceholder;
-            Name.LostFocus += AddPlaceholder;
+            UserNameTextBox.GotFocus += RemovePlaceholder;
+            UserNameTextBox.LostFocus += AddPlaceholder;
             Mail.GotFocus += RemovePlaceholder;
             Mail.LostFocus += AddPlaceholder;
             Pass.GotFocus += RemovePlaceholder;
@@ -41,10 +44,10 @@ namespace Desktop
 
         private void AddPlaceholder(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(Name.Text))
+            if (string.IsNullOrWhiteSpace(UserNameTextBox.Text))
             {
-                Name.Text = "Введите имя пользователя";
-                Name.Foreground = System.Windows.Media.Brushes.Gray;
+                UserNameTextBox.Text = "Введите имя пользователя";
+                UserNameTextBox.Foreground = System.Windows.Media.Brushes.Gray;
             }
 
             if (string.IsNullOrWhiteSpace(Mail.Text))
@@ -71,7 +74,7 @@ namespace Desktop
             // Регистрация
             StringBuilder errors = new StringBuilder();
 
-            string username = Name.Foreground.ToString() == "#FFBBB9B9" ? "" : Name.Text.Trim();
+            string username = UserNameTextBox.Foreground.ToString() == "#FFBBB9B9" ? "" : UserNameTextBox.Text.Trim();
             string email = Mail.Foreground.ToString() == "#FFBBB9B9" ? "" : Mail.Text.Trim();
             string password = Pass.Foreground.ToString() == "#FFBBB9B9" ? "" : Pass.Text;
             string confirmPassword = PassChange.Foreground.ToString() == "#FFBBB9B9" ? "" : PassChange.Text;
@@ -120,8 +123,15 @@ namespace Desktop
                 {
                     MessageBox.Show($"Пользователь '{username}' успешно зарегистрирован!", "Успех",
                         MessageBoxButton.OK, MessageBoxImage.Information);
-                    this.DialogResult = true;
-                    this.Close();
+
+                    // Вызываем событие регистрации
+                    RegistrationCompleted?.Invoke(this, true);
+
+                    // Попробуем вернуться назад
+                    if (NavigationService.CanGoBack)
+                    {
+                        NavigationService.GoBack();
+                    }
                 }
             }
             catch (Exception ex)
@@ -133,11 +143,14 @@ namespace Desktop
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            // Назад
-            this.DialogResult = false;
-            this.Close();
-        }
+            // Назад - вызываем событие отмены
+            RegistrationCompleted?.Invoke(this, false);
 
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e) { }
+            // И пробуем вернуться через NavigationService
+            if (NavigationService.CanGoBack)
+            {
+                NavigationService.GoBack();
+            }
+        }
     }
 }

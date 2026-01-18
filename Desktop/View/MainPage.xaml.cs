@@ -1,5 +1,4 @@
-﻿using Desktop;
-using Desktop.Repository;
+﻿using Desktop.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,18 +8,21 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Todo.Entities;
 
-namespace Lab4
+namespace Desktop.View
 {
-    public partial class Main : Window
+    public partial class MainPage : Page
     {
         private List<UserTask> userTasks = new List<UserTask>();
         private UserTask selectedTask = null;
-        private string currentCategory = "Все"; // Начинаем с "Все"
+        private string currentCategory = "Все";
         private bool showHistory = false;
         private int currentUserId;
         private UserRepository _repository;
 
-        public Main()
+        // Событие для создания новой задачи
+        public event EventHandler CreateTaskRequested;
+
+        public MainPage()
         {
             InitializeComponent();
             _repository = new UserRepository();
@@ -37,10 +39,11 @@ namespace Lab4
             RefreshTasks();
         }
 
-        private void RefreshTasks()
+        // Публичный метод
+        public void RefreshTasks()
         {
             userTasks = _repository.GetUserTasks(currentUserId);
-            DisplayTasks();
+            DisplayTasks(); // Важно: вызывает DisplayTasks внутри
         }
 
         private void DisplayTasks()
@@ -49,13 +52,12 @@ namespace Lab4
 
             // Фильтруем задачи
             var tasksToShow = userTasks.Where(t =>
-                t.IsCompleted == showHistory && // История или активные
-                (currentCategory == "Все" || t.Category == currentCategory) // Все или конкретная категория
+                t.IsCompleted == showHistory &&
+                (currentCategory == "Все" || t.Category == currentCategory)
             ).ToList();
 
             if (tasksToShow.Count == 0)
             {
-                // Показываем сообщение, если задач нет
                 var noTasksText = new TextBlock
                 {
                     Text = showHistory
@@ -72,7 +74,6 @@ namespace Lab4
 
             foreach (var task in tasksToShow)
             {
-                // Создаем контейнер для задачи
                 var taskBorder = new Border
                 {
                     Margin = new Thickness(0, 10, 0, 0),
@@ -83,7 +84,6 @@ namespace Lab4
                     Tag = task
                 };
 
-                // Чередуем цвета фона
                 if (TasksList.Children.Count % 2 == 1 && !task.IsCompleted)
                 {
                     taskBorder.Background = new SolidColorBrush(Color.FromArgb(255, 238, 240, 255));
@@ -91,13 +91,12 @@ namespace Lab4
 
                 var stackPanel = new StackPanel { Orientation = Orientation.Horizontal };
 
-                // CheckBox
                 var checkBox = new CheckBox
                 {
                     Margin = new Thickness(0, 0, 10, 0),
                     IsChecked = task.IsCompleted,
                     VerticalAlignment = VerticalAlignment.Center,
-                    IsEnabled = !task.IsCompleted // Нельзя снять галочку с завершенных в режиме "История"
+                    IsEnabled = !task.IsCompleted
                 };
 
                 checkBox.Checked += (s, e) =>
@@ -116,7 +115,6 @@ namespace Lab4
                     UpdateSelectedTask();
                 };
 
-                // Текст задачи
                 var textStack = new StackPanel();
                 var titleText = new TextBlock
                 {
@@ -141,7 +139,6 @@ namespace Lab4
 
                 taskBorder.Child = stackPanel;
 
-                // Обработчик клика по задаче
                 taskBorder.MouseLeftButtonDown += (s, e) =>
                 {
                     selectedTask = task;
@@ -166,7 +163,6 @@ namespace Lab4
         {
             if (selectedTask != null)
             {
-                // Находим обновленную задачу в списке
                 var updatedTask = userTasks.FirstOrDefault(t => t.Id == selectedTask.Id);
                 if (updatedTask != null)
                 {
@@ -182,17 +178,10 @@ namespace Lab4
             DeleteButton.IsEnabled = enabled;
         }
 
-        // Обработчики для переключения между "Задачи" и "История"
         private void TasksText_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             showHistory = false;
-
-            // Подсветка активного пункта меню
-            HighlightMenuItems(sender as TextBlock);
-
             DisplayTasks();
-
-            // Сбрасываем выбранную задачу
             selectedTask = null;
             UpdateButtonsState(false);
         }
@@ -200,13 +189,7 @@ namespace Lab4
         private void HistoryText_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             showHistory = true;
-
-            // Подсветка активного пункта меню
-            HighlightMenuItems(sender as TextBlock);
-
             DisplayTasks();
-
-            // Сбрасываем выбранную задачу
             selectedTask = null;
             UpdateButtonsState(false);
         }
@@ -215,85 +198,10 @@ namespace Lab4
         {
             if (sender is TextBlock categoryText)
             {
-                // Если кликаем на уже выбранную категорию - сбрасываем на "Все"
-                if (currentCategory == categoryText.Tag as string)
-                {
-                    currentCategory = "Все";
-                    // Убираем подсветку со всех категорий
-                    UnhighlightAllCategories();
-                }
-                else
-                {
-                    currentCategory = categoryText.Tag as string;
-                    // Подсвечиваем выбранную категорию
-                    HighlightSelectedCategory(categoryText);
-                }
-
+                currentCategory = categoryText.Tag as string;
                 DisplayTasks();
-
-                // Сбрасываем выбранную задачу при смене категории
                 selectedTask = null;
                 UpdateButtonsState(false);
-            }
-        }
-
-        private void HighlightMenuItems(TextBlock selectedItem)
-        {
-            // Находим все элементы меню в левой панели
-            var leftPanel = ((Grid)Content).Children[0] as StackPanel;
-
-            foreach (var child in leftPanel.Children)
-            {
-                if (child is TextBlock textBlock &&
-                    (textBlock.Text == "Задачи" || textBlock.Text == "История"))
-                {
-                    if (textBlock == selectedItem)
-                    {
-                        textBlock.FontWeight = FontWeights.Bold;
-                        textBlock.Foreground = Brushes.Black;
-                    }
-                    else
-                    {
-                        textBlock.FontWeight = FontWeights.Normal;
-                        textBlock.Foreground = Brushes.Gray;
-                    }
-                }
-            }
-        }
-
-        private void HighlightSelectedCategory(TextBlock selectedCategory)
-        {
-            // Находим панель с категориями
-            var categoriesPanel = ((Grid)Content).Children[1] as Grid;
-            var stackPanel = categoriesPanel.Children[0] as StackPanel;
-
-            // Сбрасываем подсветку у всех категорий
-            foreach (var child in stackPanel.Children)
-            {
-                if (child is TextBlock textBlock)
-                {
-                    textBlock.FontWeight = FontWeights.Normal;
-                    textBlock.TextDecorations = null;
-                }
-            }
-
-            // Подсвечиваем выбранную категорию
-            selectedCategory.FontWeight = FontWeights.Bold;
-            selectedCategory.TextDecorations = TextDecorations.Underline;
-        }
-
-        private void UnhighlightAllCategories()
-        {
-            var categoriesPanel = ((Grid)Content).Children[1] as Grid;
-            var stackPanel = categoriesPanel.Children[0] as StackPanel;
-
-            foreach (var child in stackPanel.Children)
-            {
-                if (child is TextBlock textBlock)
-                {
-                    textBlock.FontWeight = FontWeights.Normal;
-                    textBlock.TextDecorations = null;
-                }
             }
         }
 
@@ -321,7 +229,6 @@ namespace Lab4
                     userTasks.Remove(selectedTask);
                     DisplayTasks();
 
-                    // Сбрасываем детали
                     ResetTaskDetails();
                     UpdateButtonsState(false);
                     selectedTask = null;
@@ -337,17 +244,9 @@ namespace Lab4
             TaskDescription.Text = "Lorem ipsum dolor sit amet, consectetur adipiscing.";
         }
 
-        // Обработчик для кнопки "+" создания новой задачи
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            CreateTask createTaskWindow = new CreateTask(currentUserId, UserNameText.Text);
-            createTaskWindow.Owner = this;
-            createTaskWindow.TaskCreated += (s, args) =>
-            {
-                // Обновляем список задач после создания новой
-                RefreshTasks();
-            };
-            createTaskWindow.ShowDialog();
+            CreateTaskRequested?.Invoke(this, EventArgs.Empty);
         }
     }
 }

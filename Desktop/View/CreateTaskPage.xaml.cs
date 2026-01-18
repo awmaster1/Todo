@@ -4,17 +4,19 @@ using System.Windows.Controls;
 using Todo.Entities;
 using Desktop.Repository;
 
-namespace Desktop
+namespace Desktop.View
 {
-    public partial class CreateTask : Window
+    public partial class CreateTaskPage : Page
     {
         private int _userId;
         private string _userName;
         private UserRepository _repository;
 
+        // События
         public event EventHandler TaskCreated;
+        public event EventHandler CancelRequested;
 
-        public CreateTask(int userId, string userName)
+        public CreateTaskPage(int userId, string userName)
         {
             InitializeComponent();
             _userId = userId;
@@ -82,8 +84,6 @@ namespace Desktop
 
                 // Вызываем событие создания задачи
                 TaskCreated?.Invoke(this, EventArgs.Empty);
-
-                this.Close();
             }
             catch (Exception ex)
             {
@@ -94,8 +94,8 @@ namespace Desktop
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            // Отмена - возвращаемся в Main_empty
-            this.Close();
+            // Отмена
+            CancelRequested?.Invoke(this, EventArgs.Empty);
         }
 
         // Вспомогательные методы для работы с элементами
